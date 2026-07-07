@@ -1,1 +1,32 @@
+name: Deploy to UAT
 
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Install SnowSQL
+      run: |
+        pip install snowflake-cli-labs
+
+    - name: Deploy SQL
+      env:
+      SNOWFLAKE_ACCOUNT: JKB05448
+      SNOWFLAKE_USER: AAGRAWAL712
+      SNOWFLAKE_PASSWORD: Googlehome@15
+      SNOWFLAKE_WAREHOUSE: COMPUTE_WH
+      SNOWFLAKE_ROLE: ACCOUNTADMIN
+      TARGET_DATABASE: FIRST_TECH_DCU_U
+
+
+      run: |
+        echo "Executing deployment..."
