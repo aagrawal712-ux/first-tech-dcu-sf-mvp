@@ -21,9 +21,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Display Environment
+      - name: Verify Secrets
         run: |
-          echo "Deploying to $TARGET_DATABASE"
+          echo "Account Exists: ${{ secrets.SNOWFLAKE_ACCOUNT != '' }}"
+          echo "User Exists: ${{ secrets.SNOWFLAKE_USER != '' }}"
+          echo "Password Exists: ${{ secrets.SNOWFLAKE_PASSWORD != '' }}"
+          echo "Role Exists: ${{ secrets.SNOWFLAKE_ROLE != '' }}"
+          echo "Warehouse Exists: ${{ secrets.SNOWFLAKE_WAREHOUSE != '' }}"
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       - name: Install Snowflake Connector
         run: |
@@ -32,5 +41,3 @@ jobs:
       - name: Execute Deployment
         run: |
           python deploy.py
-
-      
