@@ -2,11 +2,12 @@ name: Deploy to UAT
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
   deploy:
+
     runs-on: ubuntu-latest
 
     env:
@@ -18,16 +19,11 @@ jobs:
       TARGET_DATABASE: FIRST_TECH_DCU_U
 
     steps:
+
       - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Verify Secrets
-        run: |
-          echo "Account Exists: ${{ secrets.SNOWFLAKE_ACCOUNT != '' }}"
-          echo "User Exists: ${{ secrets.SNOWFLAKE_USER != '' }}"
-          echo "Password Exists: ${{ secrets.SNOWFLAKE_PASSWORD != '' }}"
-          echo "Role Exists: ${{ secrets.SNOWFLAKE_ROLE != '' }}"
-          echo "Warehouse Exists: ${{ secrets.SNOWFLAKE_WAREHOUSE != '' }}"
+        with:
+          fetch-depth: 0
 
       - name: Install Python
         uses: actions/setup-python@v5
