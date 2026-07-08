@@ -97,3 +97,4 @@ finally:
     conn.close()
 
     print("Snowflake connection closed.")
+
