@@ -24,3 +24,13 @@ jobs:
       - name: Display Environment
         run: |
           echo "Deploying to $TARGET_DATABASE"
+
+      - name: Install Snowflake Connector
+        run: |
+          pip install snowflake-connector-python
+
+      - name: Execute Deployment
+        run: |
+          python deploy.py
+
+      
