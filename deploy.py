@@ -4,7 +4,7 @@ import snowflake.connector
 print("Connecting to Snowflake...")
 
 
-  conn = snowflake.connector.connect(
+conn = snowflake.connector.connect(
     account=os.environ["SNOWFLAKE_ACCOUNT"],
     user=os.environ["SNOWFLAKE_USER"],
     password=os.environ["SNOWFLAKE_PASSWORD"],
