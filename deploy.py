@@ -3,6 +3,14 @@ import snowflake.connector
 
 print("Connecting to Snowflake...")
 
+- name: Check Secrets
+  run: |
+    echo "Account Exists: ${{ secrets.SNOWFLAKE_ACCOUNT != '' }}"
+    echo "User Exists: ${{ secrets.SNOWFLAKE_USER != '' }}"
+    echo "Password Exists: ${{ secrets.SNOWFLAKE_PASSWORD != '' }}"
+    echo "Role Exists: ${{ secrets.SNOWFLAKE_ROLE != '' }}"
+    echo "Warehouse Exists: ${{ secrets.SNOWFLAKE_WAREHOUSE != '' }}"
+
 conn = snowflake.connector.connect(
     account=os.environ["SNOWFLAKE_ACCOUNT"],
     user=os.environ["SNOWFLAKE_USER"],
