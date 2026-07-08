@@ -1,0 +1,41 @@
+
+USE DATABASE FIRST_TECH_DCU_D;
+
+USE SCHEMA BRONZE;
+
+
+CREATE OR REPLACE TABLE DIM_CUSTOMER (
+    
+    -- Surrogate Key
+    CUSTOMER_SK            NUMBER AUTOINCREMENT,
+
+    -- Business Key
+    CUSTOMER_ID            VARCHAR(50) NOT NULL,
+
+    -- Customer Attributes
+    CUSTOMER_NAME          VARCHAR(200),
+    FIRST_NAME             VARCHAR(100),
+    LAST_NAME              VARCHAR(100),
+    EMAIL_ADDRESS          VARCHAR(255),
+    PHONE_NUMBER           VARCHAR(50),
+    DATE_OF_BIRTH          DATE,
+    GENDER                 VARCHAR(20),
+    CUSTOMER_STATUS        VARCHAR(50),
+    CITY                   VARCHAR(100),
+    STATE                  VARCHAR(100),
+    COUNTRY                VARCHAR(100),
+    POSTAL_CODE            VARCHAR(20),
+
+    -- SCD Type 2 Columns
+    EFFECTIVE_START_DATE   DATE NOT NULL,
+    EFFECTIVE_END_DATE     DATE NOT NULL,
+    CURRENT_FLAG           VARCHAR(1) DEFAULT 'Y',
+
+    -- Audit Columns
+    SOURCE_SYSTEM          VARCHAR(100),
+    CREATED_TIMESTAMP      TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP(),
+    UPDATED_TIMESTAMP      TIMESTAMP_NTZ,
+
+    CONSTRAINT PK_DIM_CUSTOMER
+        PRIMARY KEY (CUSTOMER_SK)
+);
