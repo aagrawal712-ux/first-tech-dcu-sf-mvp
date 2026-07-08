@@ -1,5 +1,5 @@
 import os
-import glob
+import subprocess
 import snowflake.connector
 
 print("Connecting to Snowflake...")
@@ -15,6 +15,7 @@ conn = snowflake.connector.connect(
 cur = conn.cursor()
 
 try:
+
     target_db = os.environ["TARGET_DATABASE"]
 
     print(f"Deploying to {target_db}")
@@ -22,27 +23,54 @@ try:
     cur.execute(f"USE DATABASE {target_db}")
     cur.execute("USE SCHEMA PUBLIC")
 
-    # Find all TXT files
-    txt_files = glob.glob("**/*.txt", recursive=True)
+    tags = subprocess.check_output(
+        ["git", "tag", "--sort=-version:refname"]
+    ).decode().splitlines()
 
-    if not txt_files:
-        raise Exception("No .txt files found in repository")
+    if len(tags) < 2:
+        raise Exception(
+            "Minimum 2 tags required. Example: v1.0 and v1.1"
+        )
 
-    for file_name in sorted(txt_files):
+    current_tag = tags[0]
+    previous_tag = tags[1]
+
+    print(f"Comparing {previous_tag} -> {current_tag}")
+
+    changed_files = subprocess.check_output(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            previous_tag,
+            current_tag
+        ]
+    ).decode().splitlines()
+
+    sql_files = [
+        f for f in changed_files
+        if f.endswith(".sql")
+    ]
+
+    print("Changed SQL files:")
+    print(sql_files)
+
+    if not sql_files:
+        print("No SQL changes found.")
+        exit(0)
+
+    for file_name in sql_files:
+
         print(f"Executing {file_name}")
 
-        with open(file_name, "r", encoding="utf-8") as f:
-            sql_script = f.read().strip()
-
-        if not sql_script:
-            print(f"Skipping empty file: {file_name}")
-            continue
+        with open(file_name, "r") as f:
+            sql_script = f.read()
 
         cur.execute(sql_script)
 
         print(f"Completed {file_name}")
 
-    print("Deployment Successful!")
+    print("Deployment Successful")
 
 finally:
     cur.close()
