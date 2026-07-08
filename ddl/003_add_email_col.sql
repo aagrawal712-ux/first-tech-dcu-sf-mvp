@@ -1,7 +1,0 @@
-use schema public;
-
-ALTER TABLE CUSTOMER
-ADD COLUMN EMAIL STRING;
-
-
-
