@@ -1,0 +1,6 @@
+use schema public;
+
+
+
+ALTER TABLE CUSTOMER
+ADD COLUMN EMAIL_123 STRING;
