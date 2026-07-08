@@ -23,55 +23,78 @@ try:
     cur.execute(f"USE DATABASE {target_db}")
     cur.execute("USE SCHEMA PUBLIC")
 
+    # Get all tags sorted descending
     tags = subprocess.check_output(
         ["git", "tag", "--sort=-version:refname"]
     ).decode().splitlines()
 
+    print(f"Available tags: {tags}")
+
+    # First release
     if len(tags) < 2:
-        raise Exception(
-            "Minimum 2 tags required. Example: v1.0 and v1.1"
-        )
 
-    current_tag = tags[0]
-    previous_tag = tags[1]
+        print("First release detected.")
+        print("Deploying all SQL files.")
 
-    print(f"Comparing {previous_tag} -> {current_tag}")
+        changed_files = subprocess.check_output(
+            ["git", "ls-files"]
+        ).decode().splitlines()
 
-    changed_files = subprocess.check_output(
-        [
-            "git",
-            "diff",
-            "--name-only",
-            previous_tag,
-            current_tag
-        ]
-    ).decode().splitlines()
+    else:
 
+        current_tag = tags[0]
+        previous_tag = tags[1]
+
+        print(f"Comparing {previous_tag} -> {current_tag}")
+
+        changed_files = subprocess.check_output(
+            [
+                "git",
+                "diff",
+                "--name-only",
+                previous_tag,
+                current_tag
+            ]
+        ).decode().splitlines()
+
+    # Only SQL files
     sql_files = [
         f for f in changed_files
         if f.endswith(".sql")
     ]
 
-    print("Changed SQL files:")
-    print(sql_files)
-
-    if not sql_files:
-        print("No SQL changes found.")
-        exit(0)
+    print("Files selected for deployment:")
 
     for file_name in sql_files:
+        print(file_name)
 
-        print(f"Executing {file_name}")
+    if len(sql_files) == 0:
+        print("No SQL files changed.")
+        exit(0)
 
-        with open(file_name, "r") as f:
+    # Execute files
+    for file_name in sql_files:
+
+        print(f"Executing: {file_name}")
+
+        with open(file_name, "r", encoding="utf-8") as f:
             sql_script = f.read()
+
+        # Skip empty files
+        if len(sql_script.strip()) == 0:
+            print(f"Skipping empty file: {file_name}")
+            continue
 
         cur.execute(sql_script)
 
-        print(f"Completed {file_name}")
+        print(f"Completed: {file_name}")
 
-    print("Deployment Successful")
+    print("Deployment Successful!")
 
 finally:
+
     cur.close()
     conn.close()
+
+    print("Snowflake connection closed.")
+``
