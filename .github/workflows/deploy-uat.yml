@@ -2,31 +2,38 @@ name: Deploy to UAT
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
   deploy:
+
     runs-on: ubuntu-latest
+
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      TARGET_DATABASE: FIRST_TECH_DCU_U
 
     steps:
 
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Install SnowSQL
-      run: |
-        pip install snowflake-cli-labs
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
-    - name: Deploy SQL
-      env:
-      SNOWFLAKE_ACCOUNT: JKB05448
-      SNOWFLAKE_USER: AAGRAWAL712
-      SNOWFLAKE_PASSWORD: Googlehome@15
-      SNOWFLAKE_WAREHOUSE: COMPUTE_WH
-      SNOWFLAKE_ROLE: ACCOUNTADMIN
-      TARGET_DATABASE: FIRST_TECH_DCU_U
+      - name: Install Snowflake Connector
+        run: |
+          pip install snowflake-connector-python
 
-
-      run: |
-        echo "Executing deployment..."
+      - name: Execute Deployment
+        run: |
+          python deploy.py
