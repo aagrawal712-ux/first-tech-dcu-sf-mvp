@@ -2,6 +2,10 @@ import os
 import subprocess
 import snowflake.connector
 
+# ----------------------------------
+# Connect to Snowflake
+# ----------------------------------
+
 print("Connecting to Snowflake...")
 
 conn = snowflake.connector.connect(
@@ -16,6 +20,13 @@ cur = conn.cursor()
 
 try:
 
+    # ----------------------------------
+    # Target database comes from workflow
+    #
+    # develop -> FIRST_TECH_DCU_D
+    # main    -> FIRST_TECH_DCU_U
+    # ----------------------------------
+
     target_db = os.environ["TARGET_DATABASE"]
 
     print(f"Deploying to {target_db}")
@@ -23,56 +34,54 @@ try:
     cur.execute(f"USE DATABASE {target_db}")
     cur.execute("USE SCHEMA PUBLIC")
 
-    # Get all tags sorted descending
-    tags = subprocess.check_output(
-        ["git", "tag", "--sort=-version:refname"]
+    # ----------------------------------
+    # Get changed files between
+    # current commit and previous commit
+    #
+    # Example:
+    #
+    # customer.sql modified
+    # product.sql added
+    #
+    # Only these files are deployed
+    # ----------------------------------
+
+    changed_files = subprocess.check_output(
+        [
+            "git",
+            "diff",
+            "--name-only",
+            "HEAD~1",
+            "HEAD"
+        ]
     ).decode().splitlines()
 
-    print(f"Available tags: {tags}")
+    # ----------------------------------
+    # Deploy SQL files only
+    # ----------------------------------
 
-    # First release
-    if len(tags) < 2:
-
-        print("First release detected.")
-        print("Deploying all SQL files.")
-
-        changed_files = subprocess.check_output(
-            ["git", "ls-files"]
-        ).decode().splitlines()
-
-    else:
-
-        current_tag = tags[0]
-        previous_tag = tags[1]
-
-        print(f"Comparing {previous_tag} -> {current_tag}")
-
-        changed_files = subprocess.check_output(
-            [
-                "git",
-                "diff",
-                "--name-only",
-                previous_tag,
-                current_tag
-            ]
-        ).decode().splitlines()
-
-    # Only SQL files
     sql_files = [
         f for f in changed_files
         if f.endswith(".sql")
     ]
 
-    print("Files selected for deployment:")
+    print("Changed SQL files:")
 
     for file_name in sql_files:
         print(file_name)
 
-    if len(sql_files) == 0:
-        print("No SQL files changed.")
+    # ----------------------------------
+    # No SQL changes
+    # ----------------------------------
+
+    if not sql_files:
+        print("No SQL files found for deployment.")
         exit(0)
 
-    # Execute files
+    # ----------------------------------
+    # Execute each changed SQL file
+    # ----------------------------------
+
     for file_name in sql_files:
 
         print(f"Executing: {file_name}")
@@ -80,20 +89,19 @@ try:
         with open(file_name, "r", encoding="utf-8") as f:
             sql_script = f.read()
 
-        # Skip empty files
-        if len(sql_script.strip()) == 0:
-            print(f"Skipping empty file: {file_name}")
-            continue
-
-        cur.execute(sql_script)
+        # Execute multiple statements
+        cur.execute(
+            sql_script,
+            num_statements=0
+        )
 
         print(f"Completed: {file_name}")
 
-    print("Deployment Successful!")
+    print("Deployment Successful")
 
 finally:
 
     cur.close()
     conn.close()
 
-    print("Snowflake connection closed.")
+    print("Snowflake Connection Closed")
