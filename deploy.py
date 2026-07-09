@@ -1,5 +1,3 @@
-##deploy.py
-
 import os
 import subprocess
 import snowflake.connector
