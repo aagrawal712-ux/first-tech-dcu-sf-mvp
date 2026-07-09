@@ -2,6 +2,9 @@
 
 name: Snowflake Deployment
 
+permissions:
+  contents: write
+
 on:
   push:
     branches:
