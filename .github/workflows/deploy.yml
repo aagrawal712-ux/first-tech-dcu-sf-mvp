@@ -5,7 +5,7 @@ name: Snowflake Deployment
 on:
   push:
     branches:
-      - develop
+      - dev
       - main
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
 
       - name: Set Target Database
         run: |
-          if [ "${{ github.ref_name }}" = "develop" ]; then
+          if [ "${{ github.ref_name }}" = "dev" ]; then
             echo "TARGET_DATABASE=FIRST_TECH_DCU_D" >> $GITHUB_ENV
           else
             echo "TARGET_DATABASE=FIRST_TECH_DCU_U" >> $GITHUB_ENV
